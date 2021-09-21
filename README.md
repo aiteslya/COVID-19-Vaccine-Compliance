@@ -1,6 +1,6 @@
 # Feedback between SARS-CoV-2 transmission dynamics, vaccination rollout and compliance to social distancing
 
-
+DOI for this GitHub repository DOI: 10.5281/zenodo.5519368
 
 
 ## Overview
