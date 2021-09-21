@@ -1,0 +1,105 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Feedback between SARS-CoV-2 tranmission dynamics, vaccination rollout and compliance to social distancing</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-09-21"><meta name="DC.source" content="README.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Feedback between SARS-CoV-2 tranmission dynamics, vaccination rollout and compliance to social distancing</h1><!--introduction--><p>DOI for this GitHub repository DOI: 10.5281/zenodo.4661169</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Overview</a></li><li><a href="#2">DATA</a></li><li><a href="#3">Model</a></li><li><a href="#4">Figures</a></li><li><a href="#5">OS requirements</a></li><li><a href="#6">Hardware requirements</a></li><li><a href="#7">Installation guide</a></li></ul></div><h2 id="1">Overview</h2><p>We investigated the impact of the feedback between compliance, the incidence of infection, and vaccination coverage on the success of a vaccination programme in the population where waning of compliance depends on vaccine coverage.</p><h2 id="2">DATA</h2><p>We used publically available data that we downloaded from <a href="https://ourworldindata.org">https://ourworldindata.org</a> . We extracted relevant to our research sections and saved them in a new .csv file. All data files reside in <b>Main/Data</b> folder.</p><h2 id="3">Model</h2><p>We coded and analysed the model using script and function that were implemented in MATLAB R2020b. The script and functions necessary to produce figures in both the main text and the supplementary material can be found in the folder <b>Main</b>.</p><h2 id="4">Figures</h2><p>Figures in .fig and .eps format can be found in <b>Main/Figures</b> and <b>Main/SMFigures</b> folders, for the main text and the supplementary materials, respectively.</p><h2 id="5">OS requirements</h2><div><ul><li><b>Windows</b> Windows 10 (version 1803 or higher), Windows 7 Service Pack 1, Windows Server 2019, Windows Server 2016</li><li><b>macOS</b> macOS Big Sur (11), macOS Catalina (10.15), macOSMojave(10.14)</li></ul></div><h2 id="6">Hardware requirements</h2><div><ul><li>Any Intel x86-64 processor</li><li>4GB</li></ul></div><h2 id="7">Installation guide</h2><p>MATLAB R2020b <a href="https://nl.mathworks.com/products/matlab.html">https://nl.mathworks.com/products/matlab.html</a></p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Feedback between SARS-CoV-2 tranmission dynamics, vaccination rollout and compliance to social distancing
+% DOI for this GitHub repository
+% DOI: 10.5281/zenodo.4661169
+
+%% Overview
+% We investigated the impact of the feedback between compliance, the incidence of infection, and vaccination coverage on the success of a vaccination programme in the population where waning of compliance depends on vaccine coverage.
+
+%% DATA
+% We used publically available data that we downloaded from
+% https://ourworldindata.org . We extracted relevant to our research 
+% sections and saved them in a new .csv file. All data files reside in 
+% *Main/Data* folder.
+
+%% Model
+% We coded and analysed the model using script and function that were 
+% implemented in MATLAB R2020b. The script and functions necessary to 
+% produce figures in both the main text and the supplementary material can
+% be found in the folder *Main*.
+
+%% Figures
+% Figures in .fig and .eps format can be found in *Main/Figures* and *Main/SMFigures*
+% folders, for the main text and the supplementary materials, respectively.
+
+%% OS requirements
+% * *Windows* Windows 10 (version 1803 or higher), Windows 7 Service Pack 1, Windows
+% Server 2019, Windows Server 2016
+% * *macOS* macOS Big Sur (11), macOS Catalina (10.15), macOSMojave(10.14)
+%% Hardware requirements
+% * Any Intel x86-64 processor
+% * 4GB
+%% Installation guide
+% MATLAB R2020b <https://nl.mathworks.com/products/matlab.html>
+##### SOURCE END #####
+--></body></html>
