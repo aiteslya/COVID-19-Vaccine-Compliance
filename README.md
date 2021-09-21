@@ -10,7 +10,7 @@ We investigated the impact of the feedback between compliance, the incidence of 
 
 ## DATA
 
-We used publically available data that we downloaded from https://ourworldindata.org . We extracted relevant to our research sections and saved them in a new .csv file. All data files reside in *Main/Data* folder.
+We used publically available data that we downloaded from https://ourworldindata.org . We extracted relevant to our research sections and saved them in a new .csv file. All data files reside in *Main/DataVaccine* folder.
 
 
 ## Model
