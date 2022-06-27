@@ -287,7 +287,7 @@ for pc=thresharr
     end
     
     if pc==thresharr(2) 
-        ylabel({'\textbf{Lockfown threshold}';'\textbf{500 individuals}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
+        ylabel({'\textbf{Lockdown threshold}';'\textbf{500 individuals}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
     end
     
     set(gca,'xtick',xtpoints6)

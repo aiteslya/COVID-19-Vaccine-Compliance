@@ -13,10 +13,10 @@ format long;
 % read tables
 
 %read the CSV files and load them into array
-TblBEL = readtable('DataVaccine/Belarus.csv');
-TblDEN = readtable('DataVaccine/Denmark.csv');
-TblISR = readtable('DataVaccine/Israel.csv');
-TblNED = readtable('DataVaccine/Netherlands.csv');
+TblBEL = readtable('DataVaccine2/Belarus.csv');
+TblDEN = readtable('DataVaccine2/Denmark.csv');
+TblISR = readtable('DataVaccine2/Israel.csv');
+TblNED = readtable('DataVaccine2/Netherlands.csv');
 
 % convert dates to serial numbers and set the first date in the date set as
 % zero

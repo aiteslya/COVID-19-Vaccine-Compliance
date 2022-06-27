@@ -1,10 +1,10 @@
- %This is the script that plots heat maps for varying variant varying upsilon,
+ %This is the script that plots heat maps varying upsilon,
 %omega and mu1 and r2, keeping the rest of the parameters fixed
 % during the lockdown for COVID-19-Compliance-Vaccine model
 % R0 for the old virus strain is 2.5 with Re(0)=1.1 at the start of the
 % vaccination rollout
 % the outputs are the cumulative
-% percentage of infected relative to no vaccination scenario adjusted to
+% percentage of hospitalized relative to no vaccination scenario adjusted to
 % not count the infected and recovered at time 0
 % time units are in days
 %prepare settings
@@ -26,8 +26,8 @@ R0=2.5;
 epsilon=R0*gamma/chat;
 
 %set up initial data
-% % factor of detected/total
-% X=1;
+% factor of detected/total
+X=1;
 %prevalence of infectious cases
 TotalInf=112435;%37706;
 Incid=TotalInf*gamma;
@@ -117,9 +117,22 @@ opts = odeset('RelTol',1e-12,'AbsTol',Atol);
 %integrating time
 T=200;
 
+% compliance acquisition rate
 delta=4e-5;
 k1=1;
 k2=1;
+
+% hospitalization probability 2x3: rows unvaccinated/vaccinates, columns:
+% original, alpha, delta
+%vaccine efficacy in preventing hospitalization for original, alpha and
+%delta variant
+vacc_eff_arr=[0.95,0.85,0.85];
+
+hosp_prob_arr(1,1)=0.04;%probability of becoming hospitalized when infected with original strain and non-vaccinated
+hosp_prob_arr(1,2)=1.4*hosp_prob_arr(1,1);%0.11;%probability of becoming hospitalized when infected with alpha strain and non-vaccinated, slightly higher than for original
+hosp_prob_arr(1,3)=1.85*hosp_prob_arr(1,2);%probability of becoming hospitalized when infected with delta strain and non-vaccinated, 1.85 higher than for alpha
+hosp_prob_arr(2,:)=(1-vacc_eff_arr).*(hosp_prob_arr(1,:));
+
 
 %format of the legend
 formatSpec = '%.2e';
@@ -133,7 +146,7 @@ r2arr=[13.47/c,1];
 fracarr=[1/3,2/3];
 mu1arr=3./(fracarr*5.1e8);
 % set up main arrays for the heat maps
-meshsize=10;%25;
+meshsize=25;
 minupsilon=5e-4;%5.9e-4;
 maxupsilon=6e-3;%0.0053;% vaccination rate in Israel
 upsilonarr=linspace(minupsilon,maxupsilon,meshsize);%[5.9e-4,4.9e-3];
@@ -150,10 +163,11 @@ novacc=[0.9,0.13,0.13];
 
 figc=1;
 counter=1;
-tarr=linspace(0,200,100);
+%tarr=linspace(0,200,100);
 r2=1;
-numpoints=100;
-tdiscr=linspace(0,T,numpoints);
+%numpoints=100;
+%tdiscr=linspace(0,T,numpoints);
+%discretize the mesh for heat maps
 omegaarr=linspace(0.55,0.95,meshsize);
 [Uarr,Oarr]=meshgrid(upsilonarr,omegaarr);
 
@@ -171,20 +185,16 @@ omega=1;
 pars=[beta,r1,r2,delta,mu0,mu1,upsilon,alpha,gamma,k1,k2,omega];
 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
 % collect outputs
-% cumulatively infected
-cum=N-y(:,1)-y(:,5)-infect0;
-if abs(cum(1))<1e-9
-    cum(1)=0;
-else
-    error('The cumulative number of newly infected at time 0 is not equal to 0');
-end
+% cumulatively hospitalized
+cum_hosp=hosp_prob_arr(1,1)*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13)));
 
 %find indices of 3,6
 ind3=find(t>3*30,1);
 ind6=find(t>6*30,1);
-%cumulative infected
-cum03=cum(ind3);
-cum06=cum(ind6);
+%cumulative hospitalized following 3 and 6 months after the start of
+%simulation
+cum_hosp03=cum_hosp(ind3);
+cum_hosp06=cum_hosp(ind6);
 
 %outer loop: circles through r2: increase of the contact rate of the
 %vaccinated
@@ -224,23 +234,36 @@ for r2=r2arr
             for i2=1:meshsize 
                 upsilon=Uarr(i1,i2);
                 omega=Oarr(i1,i2);
+                           
+                % in the next two lines the column index depends on the variant
+                hosp_prob_vacc=hosp_prob_arr(2,1);
+                hosp_prob_unvacc=hosp_prob_arr(1,1);
+        
                 pars=[beta,r1,r2,delta,mu0,mu1,upsilon,alpha,gamma,k1,k2,omega];
                 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
                 % collect and process the output
                 %prevalence
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
                 cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+
+                %cumulative number of new hospitalizations since the start of the vaccination
+                cum_hosp=hosp_prob_unvacc*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13)))+hosp_prob_vacc*(y(:,16)-y(1,16)+y(:,17)-y(1,17));
+
+% cum=N-y(:,1)-y(:,5)-infect0;
+% % cumulative hospitalized
+% cum_hosp=hosp_prob_arr(1,1)*cum;
+
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
                 ind6=find(t>6*30,1);
                 %cumulative infected
-                cum3=cum(ind3);
-                cum6=cum(ind6);
+                cum3=cum_hosp(ind3);
+                cum6=cum_hosp(ind6);
                 
                 PeakRes(i1,i2)=maxi1i2;
-                Cum3(i1,i2)=100*(cum3-cum03)/cum03;
-                Cum6(i1,i2)=100*(cum6-cum06)/cum06;
+                Cum3(i1,i2)=100*(cum3-cum_hosp03)/cum_hosp03;
+                Cum6(i1,i2)=100*(cum6-cum_hosp06)/cum_hosp06;
             end
         end
         
@@ -262,7 +285,7 @@ for r2=r2arr
         % colorbar will need to be updated, depending on the row of the
         % figure
         
-        caxis([-40,70]);
+        caxis([-30,20]);
         if subfigc==4
             set(gca,'xtick',xtpoints3)
             set(gca,'xticklabel',xtlabelsStr3)
@@ -275,14 +298,14 @@ for r2=r2arr
          if r2==r2arr(1) & mu1==mu1arr(1)
              ylabel({'\textbf{Fast compliance decay,}';'\textbf{high contact rate}';'\textbf{of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          elseif r2==r2arr(1) & mu1==mu1arr(2)
-             ylabel({'\textbf{Slow compliance decay,}';'\textbf{high contact rate of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
+             ylabel({'\textbf{Slow compliance decay,}';'\textbf{high contact rate}';'\textbf{of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          elseif r2==r2arr(2) & mu1==mu1arr(1)
              ylabel({'\textbf{Fast compliance decay,}';'\textbf{low contact rate of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          else
              ylabel({'\textbf{Slow compliance decay,}';'\textbf{low contact rate of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          end
          if subfigc==1
-            title('Three months since vaccination starts','interpreter','latex','FontSize',23);
+            title('Three months since vaccination start','interpreter','latex','FontSize',23);
          end
          set(gca,'FontSize',12);
        
@@ -290,7 +313,7 @@ for r2=r2arr
         s=surf(Uarr,100*Oarr,Cum6);
         colormap jet
         % colorbar will need to be updated, depending on the row of the
-        caxis([-40,70]);
+        caxis([-30,20]);
         s.EdgeColor = 'none';
         hold on;
         view(2);
@@ -339,10 +362,8 @@ r2=13.47/c;
 pars=[beta,r1,r2,delta,mu0,mu1,upsilon0,alpha,gamma,k1,k2,omega];
 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
 % collect outputs
-%prevalence
-prev=y(:,2)+y(:,3)+y(:,6)+y(:,7);
-%cumulatively infected
-cum=N-y(:,1)-y(:,5)-infect0;
+cum_hosp=100*(hosp_prob_arr(1,2)*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13))))/N;
+
 if abs(cum(1))<1e-9
     cum(1)=0;
 else
@@ -352,9 +373,11 @@ end
 %find indices of 3,6
 ind3=find(t>3*30,1);
 ind6=find(t>6*30,1);
-%cumulative infected
-cum03=cum(ind3);
-cum06=cum(ind6);
+
+%cumulative hospitalized following 3 and 6 months after the start of
+%simulation
+cum_hosp03=cum_hosp(ind3);
+cum_hosp06=cum_hosp(ind6);
 
 %outer loop: circles through r2: increase of the contact rate of the
 %vaccinated
@@ -372,22 +395,28 @@ for r2=r2arr
             for i2=1:meshsize 
                 upsilon0=Uarr(i1,i2);
                 omega=Oarr(i1,i2);
+                % in the next two lines the column index depends on the variant
+                hosp_prob_vacc=hosp_prob_arr(2,2);
+                hosp_prob_unvacc=hosp_prob_arr(1,2);
+
                 pars=[beta,r1,r2,delta,mu0,mu1,upsilon0,alpha,gamma,k1,k2,omega];
                 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
                 % collect and process the output
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
                 cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+                cum_hosp=100*(hosp_prob_unvacc*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13)))+hosp_prob_vacc*(y(:,16)-y(1,16)+y(:,17)-y(1,17)))/N;
+                
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
                 ind6=find(t>6*30,1);
                 %cumulative infected
-                cum3=cum(ind3);
-                cum6=cum(ind6);
+                cum3=cum_hosp(ind3);
+                cum6=cum_hosp(ind6);
                 
                 PeakRes(i1,i2)=maxi1i2;
-                Cum3(i1,i2)=100*(cum3-cum03)/cum03;
-                Cum6(i1,i2)=100*(cum6-cum06)/cum06;
+                Cum3(i1,i2)=100*(cum3-cum_hosp03)/cum_hosp03;
+                Cum6(i1,i2)=100*(cum6-cum_hosp06)/cum_hosp06;
             end
         end
         
@@ -409,7 +438,7 @@ for r2=r2arr
         % colorbar will need to be updated, depending on the row of the
         % figure
         
-        caxis([-40,70]);
+        caxis([-40,65]);
         if subfigc==4
             set(gca,'xtick',xtpoints3)
             set(gca,'xticklabel',xtlabelsStr3)
@@ -429,7 +458,7 @@ for r2=r2arr
              ylabel({'\textbf{Slow compliance decay,}';'\textbf{low contact rate of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          end
          if subfigc==1
-            title('Three months since vaccination starts','interpreter','latex','FontSize',23);
+            title('Three months since vaccination start','interpreter','latex','FontSize',23);
          end
          set(gca,'FontSize',12);
        
@@ -437,7 +466,7 @@ for r2=r2arr
         s=surf(Uarr,100*Oarr,Cum6);
         colormap jet
         % colorbar will need to be updated, depending on the row of the
-        caxis([-50,230]);
+        caxis([-40,65]);
         s.EdgeColor = 'none';
         hold on;
         view(2);
@@ -459,7 +488,7 @@ for r2=r2arr
             set(gca,'xticklabel',[])
         end
         if subfigc==1
-            title('Six months since vaccination starts','interpreter','latex','FontSize',23);
+            title('Six months since vaccination start','interpreter','latex','FontSize',23);
         end
         set(gca,'FontSize',12);
         
@@ -487,17 +516,16 @@ r2=13.47/c;
 pars=[beta,r1,r2,delta,mu0,mu1,upsilon0,alpha,gamma,k1,k2,omega];
 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
 % collect outputs
-%prevalence
-prev=y(:,2)+y(:,3)+y(:,6)+y(:,7);
-cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+cum_hosp=hosp_prob_arr(1,3)*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13)));
+
 % maximum of prevalence
 max0=max(prev);
 %find indices of 3,6
 ind3=find(t>3*30,1);
 ind6=find(t>6*30,1);
 %cumulative infected
-cum03=cum(ind3);
-cum06=cum(ind6);
+cum_hosp03=cum_hosp(ind3);
+cum_hosp06=cum_hosp(ind6);
 
 XpopOut=N/popOut;
 
@@ -517,22 +545,28 @@ for r2=r2arr
             for i2=1:meshsize 
                 upsilon0=Uarr(i1,i2);
                 omega=Oarr(i1,i2);
+                % in the next two lines the column index depends on the variant
+                hosp_prob_vacc=hosp_prob_arr(2,3);
+                hosp_prob_unvacc=hosp_prob_arr(1,3);
+
                 pars=[beta,r1,r2,delta,mu0,mu1,upsilon0,alpha,gamma,k1,k2,omega];
                 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
                 % collect and process the output
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
+
+                cum_hosp=hosp_prob_unvacc*(y(:,3)+y(:,4)+y(:,7)+y(:,8)+y(:,12)+y(:,13)-(y(1,3)+y(1,4)+y(1,7)+y(1,8)+y(1,12)+y(1,13)))+hosp_prob_vacc*(y(:,16)-y(1,16)+y(:,17)-y(1,17));
                 cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
                 ind6=find(t>6*30,1);
                 %cumulative infected
-                cum3=cum(ind3);
-                cum6=cum(ind6);
+                cum3=cum_hosp(ind3);
+                cum6=cum_hosp(ind6);
                 
                 PeakRes(i1,i2)=maxi1i2;
-                Cum3(i1,i2)=100*(cum3-cum03)/cum03;
-                Cum6(i1,i2)=100*(cum6-cum06)/cum06;
+                Cum3(i1,i2)=100*(cum3-cum_hosp03)/cum_hosp03;
+                Cum6(i1,i2)=100*(cum6-cum_hosp06)/cum_hosp06;
             end
         end
         
@@ -554,7 +588,7 @@ for r2=r2arr
         % colorbar will need to be updated, depending on the row of the
         % figure
         
-        caxis([-40,70]);
+        caxis([-50,90]);
         if subfigc==4
             set(gca,'xtick',xtpoints3)
             set(gca,'xticklabel',xtlabelsStr3)
@@ -574,7 +608,7 @@ for r2=r2arr
              ylabel({'\textbf{Slow compliance decay,}';'\textbf{low contact rate of vaccinated}';' ';'Vaccine efficacy (\%)'},'interpreter','latex');
          end
          if subfigc==1
-            title('Three months since vaccination starts','interpreter','latex','FontSize',23);
+            title('Three months since vaccination start','interpreter','latex','FontSize',23);
          end
          set(gca,'FontSize',12);
        
@@ -582,7 +616,7 @@ for r2=r2arr
         s=surf(Uarr,100*Oarr,Cum6);
         colormap jet
         % colorbar will need to be updated, depending on the row of the
-        caxis([-60,190]);
+        caxis([-50,90]);
         s.EdgeColor = 'none';
         hold on;
         view(2);
@@ -604,7 +638,7 @@ for r2=r2arr
             set(gca,'xticklabel',[])
         end
         if subfigc==1
-            title('Six months since vaccination starts','interpreter','latex','FontSize',23);
+            title('Six months since vaccination start','interpreter','latex','FontSize',23);
         end
         set(gca,'FontSize',12);
         

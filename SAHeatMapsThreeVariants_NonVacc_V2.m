@@ -133,7 +133,7 @@ r2arr=[13.47/c,1];
 fracarr=[1/3,2/3];
 mu1arr=3./(fracarr*5.1e8);
 % set up main arrays for the heat maps
-meshsize=10;%25;
+meshsize=25;
 minupsilon=5e-4;%5.9e-4;
 maxupsilon=6e-3;%0.0053;% vaccination rate in Israel
 upsilonarr=linspace(minupsilon,maxupsilon,meshsize);%[5.9e-4,4.9e-3];
@@ -229,7 +229,7 @@ for r2=r2arr
                 % collect and process the output
                 %prevalence
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
-                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8))-infect0;
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
@@ -262,7 +262,8 @@ for r2=r2arr
         % colorbar will need to be updated, depending on the row of the
         % figure
         
-        caxis([-40,70]);
+        %caxis([-40,70]);
+        caxis([-400,-25]);
         if subfigc==4
             set(gca,'xtick',xtpoints3)
             set(gca,'xticklabel',xtlabelsStr3)
@@ -290,7 +291,8 @@ for r2=r2arr
         s=surf(Uarr,100*Oarr,Cum6);
         colormap jet
         % colorbar will need to be updated, depending on the row of the
-        caxis([-40,70]);
+        caxis([-400,-25]);
+        %caxis([-40,70]);
         s.EdgeColor = 'none';
         hold on;
         view(2);
@@ -299,7 +301,7 @@ for r2=r2arr
         C.LineWidth=4;
         
         f=subplot(4,2,2*subfigc);
-        hp4 = get(subplot(4,2,2*subfigc),'Position')
+        hp4 = get(subplot(4,2,2*subfigc),'Position');
         f.Position=[f.Position(1) f.Position(2) f.Position(3),0.2];
         
         %yline(60,'g','LineWidth',4);
@@ -376,7 +378,7 @@ for r2=r2arr
                 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
                 % collect and process the output
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
-                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8))-infect0;
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
@@ -489,7 +491,7 @@ pars=[beta,r1,r2,delta,mu0,mu1,upsilon0,alpha,gamma,k1,k2,omega];
 % collect outputs
 %prevalence
 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7);
-cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8))-infect0;
 % maximum of prevalence
 max0=max(prev);
 %find indices of 3,6
@@ -521,7 +523,7 @@ for r2=r2arr
                 [t,y]=ode45(@(t,y)COVIDVaccineRHS2(t,y,pars),[0,T], init,opts);
                 % collect and process the output
                 prev=y(:,2)+y(:,3)+y(:,6)+y(:,7)+y(:,11)+y(:,12)+y(:,15)+y(:,16);
-                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8)+y(:,11)+y(:,12)+y(:,13)+y(:,15)+y(:,16)+y(:,17))-infect0;
+                cum=(y(:,2)+y(:,3)+y(:,4)+y(:,6)+y(:,7)+y(:,8))-infect0;
                 maxi1i2=max(prev);
                 %find indices of 3,6,12,24 months
                 ind3=find(t>3*30,1);
@@ -554,7 +556,8 @@ for r2=r2arr
         % colorbar will need to be updated, depending on the row of the
         % figure
         
-        caxis([-40,70]);
+        caxis([-130,4]);
+        %caxis([-40,70]);
         if subfigc==4
             set(gca,'xtick',xtpoints3)
             set(gca,'xticklabel',xtlabelsStr3)
@@ -582,7 +585,8 @@ for r2=r2arr
         s=surf(Uarr,100*Oarr,Cum6);
         colormap jet
         % colorbar will need to be updated, depending on the row of the
-        caxis([-60,190]);
+        caxis([-130,4]);
+        %caxis([-60,190]);
         s.EdgeColor = 'none';
         hold on;
         view(2);
